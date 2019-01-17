@@ -23,7 +23,6 @@ lazy val contributors = Seq(
 )
 
 val catsV = "1.5.0"
-val catsEffectV = "1.1.0"
 
 val specs2V = "4.3.5"
 
@@ -48,7 +47,8 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= Seq(
     "org.typelevel"               %% "cats-core"                  % catsV,
-    "org.typelevel"               %% "cats-effect"                % catsEffectV,
+    "org.typelevel"               %% "cats-effect"                % "0.10.1",
+    "co.fs2"                      %% "fs2-core"                   % "0.10.7",
     "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   )
 )

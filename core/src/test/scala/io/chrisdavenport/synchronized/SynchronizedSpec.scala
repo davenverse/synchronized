@@ -20,6 +20,7 @@
  * 1. Change Package
  * 2. Modify Test to not required additional Spec
  */
+/*
 package io.chrisdavenport.synchronized
 
 import cats.effect.concurrent.{MVar, Ref}
@@ -87,3 +88,4 @@ final class SynchronizedSpec extends FunSpec with Assertions with Matchers {
     assert(success)
   }
 }
+*/

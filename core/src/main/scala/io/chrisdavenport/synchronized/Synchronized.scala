@@ -20,12 +20,14 @@
  * 1. Change Package
  * 2. Remove Private Status
  * 3. Switch from fine grained to bulk imports
+ * 4. Backported for 0.10 and fs2
  */
 package io.chrisdavenport.synchronized
 
-import cats.effect.Concurrent
-import cats.effect.concurrent.{Deferred, Ref}
+import cats.effect.Effect
 import cats.implicits._
+import fs2.async._
+import scala.concurrent.ExecutionContext
 
 /**
   * Provides synchronized access to a resource `A`, similar to that of
@@ -43,27 +45,33 @@ sealed abstract class Synchronized[F[_], A] {
 }
 
 object Synchronized {
-  def apply[F[_]](implicit F: Concurrent[F]): ApplyBuilders[F] =
-    new ApplyBuilders(F)
+  def apply[F[_]](implicit F: Effect[F], EC: ExecutionContext): ApplyBuilders[F] =
+    new ApplyBuilders(F, EC)
 
-  def of[F[_], A](a: A)(implicit F: Concurrent[F]): F[Synchronized[F, A]] =
-    Deferred[F, Unit].flatMap { initial =>
+  def of[F[_], A](a: A)(implicit F: Effect[F], EC: ExecutionContext): F[Synchronized[F, A]] =
+    promise[F, Unit].flatMap { initial =>
       initial.complete(()).flatMap { _ =>
-        Ref.of[F, Deferred[F, Unit]](initial).map { ref =>
+        refOf[F, Promise[F, Unit]](initial).map { ref =>
           new Synchronized[F, A] {
             override def use[B](f: A => F[B]): F[B] =
-              Deferred[F, Unit].flatMap { next =>
-                F.bracket(ref.getAndSet(next)) { current =>
-                  current.get.flatMap(_ => f(a))
-                }(_ => next.complete(()))
+              promise[F, Unit].flatMap { next =>
+                ref.modify(_ => next)
+                  .flatMap{ change => 
+                    val current = change.previous
+                    current.get.flatMap(_ => f(a))
+                  }
+                  .attempt
+                  .flatMap{ e => 
+                    next.complete(()) >> F.fromEither(e)
+                  }
               }
           }
         }
       }
     }
 
-  final class ApplyBuilders[F[_]](private val F: Concurrent[F]) extends AnyVal {
+  final class ApplyBuilders[F[_]](private val F: Effect[F], EC: ExecutionContext) {
     def of[A](a: A): F[Synchronized[F, A]] =
-      Synchronized.of(a)(F)
+      Synchronized.of(a)(F, EC)
   }
 }
