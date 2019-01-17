@@ -1,0 +1,9 @@
+
+synchronized
+Copyright 2019 Christopher Davenport
+Licensed under the MIT License (see LICENSE)
+
+This software contains portions of code derived from selections
+https://github.com/ovotech/fs2-kafka
+Copyright 2018-2019 OVO Energy Limited
+Licensed under Apache License 2.0 (see licenses/LICENSE_fs2-kafka)
