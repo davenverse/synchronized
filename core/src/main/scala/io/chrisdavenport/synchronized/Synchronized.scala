@@ -20,6 +20,7 @@
  * 1. Change Package
  * 2. Remove Private Status
  * 3. Switch from fine grained to bulk imports
+ * 4. Private Class And For Comprehension Clarity
  */
 package io.chrisdavenport.synchronized
 
@@ -47,20 +48,23 @@ object Synchronized {
     new ApplyBuilders(F)
 
   def of[F[_], A](a: A)(implicit F: Concurrent[F]): F[Synchronized[F, A]] =
-    Deferred[F, Unit].flatMap { initial =>
-      initial.complete(()).flatMap { _ =>
-        Ref.of[F, Deferred[F, Unit]](initial).map { ref =>
-          new Synchronized[F, A] {
-            override def use[B](f: A => F[B]): F[B] =
-              Deferred[F, Unit].flatMap { next =>
-                F.bracket(ref.getAndSet(next)) { current =>
-                  current.get.flatMap(_ => f(a))
-                }(_ => next.complete(()))
-              }
-          }
-        }
+    for {
+      initial <- Deferred[F, Unit]
+      _ <- initial.complete(())
+      ref <- Ref.of[F, Deferred[F, Unit]](initial)
+    } yield new DeferredRefSynchronized[F, A](ref, a)
+
+
+  private class DeferredRefSynchronized[F[_],A](
+    ref: Ref[F, Deferred[F, Unit]], a: A
+  )(implicit F: Concurrent[F]) extends Synchronized[F, A]{
+      override def use[B](f: A => F[B]): F[B] =
+        Deferred[F, Unit].flatMap { next =>
+          F.bracket(ref.getAndSet(next)) { current =>
+            current.get.flatMap(_ => f(a))
+          }(_ => next.complete(()))
       }
-    }
+  }
 
   final class ApplyBuilders[F[_]](private val F: Concurrent[F]) extends AnyVal {
     def of[A](a: A): F[Synchronized[F, A]] =
