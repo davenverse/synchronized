@@ -22,7 +22,7 @@ lazy val contributors = Seq(
   "SystemFw" -> "Fabio Labella"
 )
 
-val catsV = "1.5.0"
+val catsV = "1.6.0"
 val catsEffectV = "1.2.0"
 
 val specs2V = "4.3.5"
