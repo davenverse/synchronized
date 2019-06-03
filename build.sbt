@@ -22,7 +22,7 @@ lazy val contributors = Seq(
   "SystemFw" -> "Fabio Labella"
 )
 
-val catsV = "1.6.0"
+val catsV = "1.6.1"
 val catsEffectV = "1.3.1"
 
 val scalaTestV = Def.setting{
