@@ -24,7 +24,7 @@ lazy val contributors = Seq(
 )
 
 val catsV = "1.6.1"
-val catsEffectV = "1.3.1"
+val catsEffectV = "1.4.0"
 
 val scalaTestV = Def.setting{
   CrossVersion.partialVersion(scalaVersion.value) match {
