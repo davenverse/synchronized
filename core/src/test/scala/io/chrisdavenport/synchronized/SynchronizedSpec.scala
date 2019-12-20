@@ -25,11 +25,13 @@ package io.chrisdavenport.synchronized
 import cats.effect.concurrent.{MVar, Ref}
 import cats.effect.{Fiber, IO, ContextShift, Timer}
 import cats.implicits._
-import org.scalatest.{Assertions, FunSpec, Matchers}
+import org.scalatest.{Assertions}
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext
 
-final class SynchronizedSpec extends FunSpec with Assertions with Matchers {
+final class SynchronizedSpec extends AnyFunSpec with Assertions with Matchers {
 
   implicit val contextShift: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)
