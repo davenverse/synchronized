@@ -21,11 +21,12 @@
  * 2. Remove Private Status
  * 3. Switch from fine grained to bulk imports
  * 4. Private Class And For Comprehension Clarity
+ * 5. Switched to Simple Semaphore Approach
  */
 package io.chrisdavenport.synchronized
 
-import cats.effect.Concurrent
-import cats.effect.concurrent.{Deferred, Ref}
+import cats.effect._
+import cats.effect.concurrent.Semaphore
 import cats.implicits._
 
 /**
@@ -33,41 +34,27 @@ import cats.implicits._
   * `synchronized(a) { use(a) }`, except the blocking is semantic only,
   * and no actual threads are blocked by the implementation.
   */
-sealed abstract class Synchronized[F[_], A] {
-
-  /**
-    * Runs the specified function on the resource `A`, or waits until
-    * given exclusive access to the resource, and then runs the given
-    * function. Can be cancelled while waiting on exclusive access.
-    */
-  def use[B](f: A => F[B]): F[B]
-}
-
 object Synchronized {
   def apply[F[_]](implicit F: Concurrent[F]): ApplyBuilders[F] =
     new ApplyBuilders(F)
 
-  def of[F[_], A](a: A)(implicit F: Concurrent[F]): F[Synchronized[F, A]] =
-    for {
-      initial <- Deferred[F, Unit]
-      _ <- initial.complete(())
-      ref <- Ref.of[F, Deferred[F, Unit]](initial)
-    } yield new DeferredRefSynchronized[F, A](ref, a)
+  def in[G[_]: Sync, F[_]: Concurrent, A](a: A): G[Resource[F, A]] =
+    Semaphore.in[G, F](1).map(sem => 
+      Resource.make(sem.acquire)(_ => sem.release).as(a)
+    )
 
+  def of[F[_]: Concurrent, A](a: A) = in[F, F, A](a)
 
-  private class DeferredRefSynchronized[F[_],A](
-    ref: Ref[F, Deferred[F, Unit]], a: A
-  )(implicit F: Concurrent[F]) extends Synchronized[F, A]{
-      override def use[B](f: A => F[B]): F[B] =
-        Deferred[F, Unit].flatMap { next =>
-          F.bracket(ref.getAndSet(next)) { current =>
-            current.get.flatMap(_ => f(a))
-          }(_ => next.complete(()))
-      }
-  }
+  def uncancelableIn[G[_]: Sync, F[_]: Async, A](a: A): G[Resource[F, A]] = 
+    Semaphore.uncancelableIn[G, F](1).map(sem => 
+      Resource.make(sem.acquire)(_ => sem.release).as(a)
+    )
+
+  def uncancelable[F[_]: Async, A](a: A): F[Resource[F, A]] =
+    uncancelableIn[F, F, A](a)
 
   final class ApplyBuilders[F[_]](private val F: Concurrent[F]) extends AnyVal {
-    def of[A](a: A): F[Synchronized[F, A]] =
+    def of[A](a: A): F[Resource[F, A]] =
       Synchronized.of(a)(F)
   }
 }
