@@ -29,7 +29,7 @@ val catsEffectV = "1.4.0"
 val scalaTestV = Def.setting{
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, v)) if v <= 12 =>
-      "3.0.5"
+      "3.0.9"
     case _ =>
       "3.0.6-SNAP5"
   }
