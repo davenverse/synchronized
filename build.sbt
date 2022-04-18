@@ -35,7 +35,7 @@ val scalaTestV = Def.setting{
   }
 }
 
-val kindProjectorV = "0.9.9"
+val kindProjectorV = "0.10.0"
 val betterMonadicForV = "0.3.0-M4"
 
 // General Settings
@@ -52,7 +52,7 @@ lazy val commonSettings = Seq(
       "-doc-source-url", "https://github.com/ChristopherDavenport/synchronized/blob/v" + version.value + "€{FILE_PATH}.scala"
   ),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
+  addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= Seq(
     "org.typelevel"               %% "cats-core"                  % catsV,
