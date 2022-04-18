@@ -36,7 +36,7 @@ val scalaTestV = Def.setting{
 }
 
 val kindProjectorV = "0.9.9"
-val betterMonadicForV = "0.3.0-M4"
+val betterMonadicForV = "0.3.1"
 
 // General Settings
 lazy val commonSettings = Seq(
