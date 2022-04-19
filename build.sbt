@@ -36,19 +36,19 @@ val scalaTestV = Def.setting{
 }
 
 val kindProjectorV = "0.9.9"
-val betterMonadicForV = "0.3.0-M4"
+val betterMonadicForV = "0.3.1"
 
 // General Settings
 lazy val commonSettings = Seq(
   organization := "io.chrisdavenport",
 
-  scalaVersion := "2.12.8",
-  crossScalaVersions := Seq("2.13.0-M5", scalaVersion.value, "2.11.12"),
+  scalaVersion := "2.12.15",
+  crossScalaVersions := Seq("2.13.8", scalaVersion.value, "2.11.12"),
   scalacOptions += "-Yrangepos",
 
-  scalacOptions in (Compile, doc) ++= Seq(
+  (Compile / doc / scalacOptions) ++= Seq(
       "-groups",
-      "-sourcepath", (baseDirectory in LocalRootProject).value.getAbsolutePath,
+      "-sourcepath", (LocalRootProject / baseDirectory).value.getAbsolutePath,
       "-doc-source-url", "https://github.com/ChristopherDavenport/synchronized/blob/v" + version.value + "€{FILE_PATH}.scala"
   ),
 
@@ -99,7 +99,7 @@ lazy val releaseSettings = {
           password
         )
     ).toSeq,
-    publishArtifact in Test := false,
+    (Test / publishArtifact) := false,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     scmInfo := Some(
       ScmInfo(
@@ -204,8 +204,8 @@ lazy val micrositeSettings = {
       "gray-lighter" -> "#F4F3F4",
       "white-color" -> "#FFFFFF"
     ),
-    fork in tut := true,
-    scalacOptions in Tut --= Seq(
+    (tut / fork) := true,
+    (Tut / scalacOptions) --= Seq(
       "-Xfatal-warnings",
       "-Ywarn-unused-import",
       "-Ywarn-numeric-widen",
@@ -225,7 +225,7 @@ lazy val micrositeSettings = {
 }
 
 lazy val skipOnPublishSettings = Seq(
-  skip in publish := true,
+  (publish / skip) := true,
   publish := (()),
   publishLocal := (()),
   publishArtifact := false,
