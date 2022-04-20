@@ -31,7 +31,7 @@ val scalaTestV = Def.setting{
     case Some((2, v)) if v <= 12 =>
       "3.0.5"
     case _ =>
-      "3.0.6-SNAP5"
+      "3.0.8-RC1"
   }
 }
 
